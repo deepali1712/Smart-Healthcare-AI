@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>CareCheck – Quick Health Check</title>
+    <style>
+      :root {
+        --bg: #f4f8f7;
+        --card: #fff;
+        --ink: #14302e;
+        --mute: #587370;
+        --line: #d6e4e1;
+        --pri: #0f8b7d;
+        --low: #2f9e44;
+        --mod: #d99a0b;
+        --high: #e8590c;
+        --emg: #c92a2a;
+        --c0: #e6eeed;
+        --c1: #f4cf7a;
+        --c2: #3d4f4c;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #0d1a19;
+          --card: #142624;
+          --ink: #e2f1ee;
+          --mute: #8fada9;
+          --line: #243b38;
+          --pri: #35c2b1;
+          --c0: #1c3330;
+          --c1: #8a6d1f;
+          --c2: #9db3af;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #0d1a19;
+        --card: #142624;
+        --ink: #e2f1ee;
+        --mute: #8fada9;
+        --line: #243b38;
+        --pri: #35c2b1;
+        --c0: #1c3330;
+        --c1: #8a6d1f;
+        --c2: #9db3af;
+      }
+      html {
+        scroll-padding-top: env(safe-area-inset-top, 0px);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          17px/1.55 "Nunito",
+          "Segoe UI",
+          system-ui,
+          sans-serif;
+      }
+      h1,
+      h2 {
+        font-family: "Fraunces", Georgia, serif;
+        font-weight: 600;
+        margin: 0;
+      }
+      .wrap {
+        max-width: 720px;
+        margin: auto;
+        padding: 24px 18px 48px;
+      }
+      .brand {
+        font-weight: 700;
+        color: var(--pri);
+        font-size: 18px;
+      }
+      h1 {
+        font-size: clamp(28px, 6vw, 42px);
+        line-height: 1.15;
+        margin: 10px 0 8px;
+      }
+      .sub {
+        color: var(--mute);
+        margin: 0 0 20px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+      h2 {
+        font-size: 21px;
+        margin-bottom: 4px;
+      }
+      .hint {
+        color: var(--mute);
+        font-size: 14px;
+        margin: 0 0 10px;
+      }
+      label.f {
+        display: block;
+        font-size: 15px;
+        font-weight: 600;
+        margin-top: 12px;
+      }
+      input[type="number"] {
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--bg);
+        color: var(--ink);
+        font: inherit;
+        margin-top: 4px;
+      }
+      .g2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 6px;
+      }
+      .chips input {
+        position: absolute;
+        opacity: 0;
+      }
+      .chips label {
+        padding: 9px 15px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        cursor: pointer;
+        background: var(--bg);
+      }
+      .chips input:checked + label {
+        background: var(--pri);
+        border-color: var(--pri);
+        color: #fff;
+      }
+      .chips input:focus-visible + label {
+        outline: 3px solid var(--pri);
+        outline-offset: 2px;
+      }
+      button {
+        font: inherit;
+        cursor: pointer;
+        border-radius: 10px;
+      }
+      .go {
+        width: 100%;
+        margin-top: 18px;
+        padding: 13px;
+        background: var(--pri);
+        color: #fff;
+        border: 0;
+        font-weight: 700;
+        font-size: 17px;
+      }
+      .ex {
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--mute);
+        padding: 5px 11px;
+        font-size: 13px;
+        margin: 4px 4px 0 0;
+      }
+      button:focus-visible,
+      input:focus-visible {
+        outline: 3px solid var(--pri);
+        outline-offset: 2px;
+      }
+      .res {
+        border-radius: 14px;
+        padding: 22px;
+        color: #fff;
+        margin-bottom: 16px;
+      }
+      .res h2 {
+        font-size: 26px;
+        margin-bottom: 6px;
+      }
+      .res p {
+        margin: 0;
+      }
+      .notice ul {
+        margin: 6px 0 0;
+        padding-left: 20px;
+      }
+      .hosp {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: baseline;
+        margin-bottom: 10px;
+      }
+      canvas {
+        width: 100%;
+        max-width: 416px;
+        height: auto;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        display: block;
+        cursor: pointer;
+      }
+      .small {
+        font-size: 13px;
+        color: var(--mute);
+        margin-top: 8px;
+      }
+      .disc {
+        font-size: 13px;
+        color: var(--mute);
+        text-align: center;
+        margin-top: 18px;
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Nunito:wght@400;600;700&display=swap"
+    />
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="brand">CareCheck</div>
+      <h1>How are you feeling today?</h1>
+      <p class="sub">
+        Answer a few quick questions and find out whether to rest at home, see a
+        doctor, or get help right away.
+      </p>
+
+      <div class="card">
+        <h2>About you</h2>
+        <label class="f" for="age">Your age</label>
+        <input
+          id="age"
+          type="number"
+          inputmode="numeric"
+          min="0"
+          max="110"
+          placeholder="e.g. 35"
+        />
+        <label class="f" style="margin-top: 18px"
+          >What are you experiencing?</label
+        >
+        <div class="chips">
+          <span
+            ><input type="checkbox" id="chest_pain" /><label for="chest_pain"
+              >Chest pain</label
+            ></span
+          >
+          <span
+            ><input type="checkbox" id="breathless" /><label for="breathless"
+              >Trouble breathing</label
+            ></span
+          >
+          <span
+            ><input type="checkbox" id="cough" /><label for="cough"
+              >Cough</label
+            ></span
+          >
+          <span
+            ><input type="checkbox" id="headache" /><label for="headache"
+              >Headache</label
+            ></span
+          >
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Your readings</h2>
+        <p class="hint">
+          Fill in what you have. Leave the rest blank if you don't know it.
+        </p>
+        <div class="g2">
+          <div>
+            <label class="f" for="temp">Temperature (°C)</label
+            ><input
+              id="temp"
+              type="number"
+              inputmode="decimal"
+              step="0.1"
+              placeholder="e.g. 36.8"
+            />
+          </div>
+          <div>
+            <label class="f" for="hr">Heart rate (beats/min)</label
+            ><input
+              id="hr"
+              type="number"
+              inputmode="numeric"
+              placeholder="e.g. 80"
+            />
+          </div>
+          <div>
+            <label class="f" for="spo2">Oxygen level (%)</label
+            ><input
+              id="spo2"
+              type="number"
+              inputmode="numeric"
+              placeholder="e.g. 98"
+            />
+          </div>
+          <div>
+            <label class="f" for="sbp">Blood pressure, upper number</label
+            ><input
+              id="sbp"
+              type="number"
+              inputmode="numeric"
+              placeholder="e.g. 120"
+            />
+          </div>
+        </div>
+        <button class="go" id="run">Check my health</button>
+        <div style="margin-top: 14px">
+          <span class="hint">Quick examples:</span>
+          <div id="ex"></div>
+        </div>
+      </div>
+
+      <div id="out" hidden>
+        <div class="res" id="res">
+          <h2 id="rt"></h2>
+          <p id="rs"></p>
+        </div>
+        <div class="card notice">
+          <h2>What we noticed</h2>
+          <ul id="why"></ul>
+        </div>
+        <div class="card" id="hcard" hidden>
+          <h2>Nearest hospital</h2>
+          <div class="hosp"><b id="hname"></b><span id="htime"></span></div>
+          <canvas
+            id="map"
+            width="416"
+            height="416"
+            aria-label="Map showing the route to the nearest hospital"
+          ></canvas>
+          <p class="small">
+            Tap the map to change where you are. Demo map with estimated travel
+            times.
+          </p>
+        </div>
+      </div>
+      <p class="disc">
+        CareCheck gives general guidance only and is not a medical diagnosis. If
+        you are worried, please speak to a doctor.
+      </p>
+    </div>
+    <script>
+      const TREE = [
+        [2, 95.0, 1, 26],
+        [5, 0.5, 2, 17],
+        [4, 89.12, 3, 10],
+        [3, 37.89, 4, 7],
+        [8, 0.5, 5, 6],
+        [-1, 2, 0.0, 0.0, 1.0],
+        [-1, 2, 0.0, 0.25, 0.75],
+        [0, 56.5, 8, 9],
+        [-1, 1, 0.0, 1.0, 0.0],
+        [-1, 2, 0.0, 0.0, 1.0],
+        [2, 91.99, 11, 14],
+        [0, 59.5, 12, 13],
+        [-1, 1, 0.0, 0.5, 0.5],
+        [-1, 2, 0.0, 0.05, 0.95],
+        [6, 0.5, 15, 16],
+        [-1, 1, 0.17, 0.72, 0.11],
+        [-1, 2, 0.0, 0.48, 0.52],
+        [2, 94.71, 18, 23],
+        [3, 36.03, 19, 22],
+        [7, 0.5, 20, 21],
+        [-1, 2, 0.0, 0.0, 1.0],
+        [-1, 1, 0.0, 1.0, 0.0],
+        [-1, 2, 0.0, 0.0, 1.0],
+        [1, 87.8, 24, 25],
+        [-1, 2, 0.0, 0.0, 1.0],
+        [-1, 1, 0.0, 1.0, 0.0],
+        [6, 0.5, 27, 40],
+        [5, 0.5, 28, 35],
+        [4, 90.34, 29, 32],
+        [1, 98.64, 30, 31],
+        [-1, 1, 0.08, 0.75, 0.17],
+        [-1, 2, 0.0, 0.38, 0.62],
+        [1, 101.18, 33, 34],
+        [-1, 0, 0.85, 0.15, 0.0],
+        [-1, 1, 0.47, 0.49, 0.04],
+        [4, 87.27, 36, 37],
+        [-1, 2, 0.0, 0.0, 1.0],
+        [1, 107.95, 38, 39],
+        [-1, 1, 0.07, 0.79, 0.14],
+        [-1, 2, 0.0, 0.27, 0.73],
+        [5, 0.5, 41, 48],
+        [4, 85.61, 42, 45],
+        [2, 97.48, 43, 44],
+        [-1, 2, 0.0, 0.0, 1.0],
+        [-1, 1, 0.0, 0.75, 0.25],
+        [1, 118.65, 46, 47],
+        [-1, 1, 0.16, 0.76, 0.09],
+        [-1, 2, 0.0, 0.2, 0.8],
+        [2, 97.78, 49, 52],
+        [1, 72.13, 50, 51],
+        [-1, 1, 0.0, 0.5, 0.5],
+        [-1, 2, 0.0, 0.0, 1.0],
+        [3, 37.82, 53, 54],
+        [-1, 1, 0.0, 1.0, 0.0],
+        [-1, 2, 0.0, 0.0, 1.0],
+      ];
+      const FEAT = [
+        "age",
+        "heart_rate",
+        "spo2",
+        "temp_c",
+        "systolic_bp",
+        "chest_pain",
+        "breathless",
+        "cough",
+        "headache",
+      ];
+      const COL = ["--low", "--mod", "--high", "--emg"];
+      const MSG = [
+        [
+          "You can rest at home",
+          "Nothing here looks urgent. Rest, drink plenty of fluids and keep an eye on how you feel. See a doctor if it gets worse.",
+        ],
+        [
+          "Book a doctor visit soon",
+          "It's a good idea to talk to a doctor or book a tele-consultation within the next day or two.",
+        ],
+        [
+          "See a doctor today",
+          "Please go to a nearby hospital or clinic today, and try not to go alone.",
+        ],
+        [
+          "Get emergency help now",
+          "Call 112 or an ambulance right away and head to the nearest hospital.",
+        ],
+      ];
+      const RULES = [
+        [
+          "R1",
+          ["spo2<92", "breathless"],
+          "E",
+          "very low oxygen with trouble breathing",
+        ],
+        [
+          "R2",
+          ["chest_pain", "tachy"],
+          "E",
+          "chest pain with a fast heartbeat",
+        ],
+        [
+          "R3",
+          ["chest_pain", "hypo"],
+          "E",
+          "chest pain with very low blood pressure",
+        ],
+        [
+          "R4",
+          ["bp_crisis", "headache"],
+          "E",
+          "dangerously high blood pressure with a headache",
+        ],
+        [
+          "R5",
+          ["bp_crisis", "chest_pain"],
+          "E",
+          "dangerously high blood pressure with chest pain",
+        ],
+        ["R6", ["spo2<92"], "H", "very low oxygen level"],
+        ["R7", ["chest_pain"], "H", "chest pain"],
+        ["R8", ["high_fever", "vuln"], "H", "high fever for your age group"],
+        ["R9", ["hypo"], "H", "very low blood pressure"],
+        ["R10", ["fever", "cough"], "M", "fever with a cough"],
+        ["R11", ["spo2_mild"], "M", "slightly low oxygen level"],
+        ["R12", ["tachy"], "M", "fast heartbeat"],
+        ["R13", ["fever"], "M", "fever"],
+        ["R14", ["breathless"], "M", "trouble breathing"],
+      ];
+      const $ = (id) => document.getElementById(id);
+      const DEF = { temp: 36.8, hr: 80, spo2: 98, sbp: 118 };
+      const val = (id, d) => ($(id).value === "" ? d : +$(id).value);
+      function read() {
+        return {
+          age: +$("age").value,
+          heart_rate: val("hr", DEF.hr),
+          spo2: val("spo2", DEF.spo2),
+          temp_c: val("temp", DEF.temp),
+          systolic_bp: val("sbp", DEF.sbp),
+          chest_pain: +$("chest_pain").checked,
+          breathless: +$("breathless").checked,
+          cough: +$("cough").checked,
+          headache: +$("headache").checked,
+        };
+      }
+      function facts(p) {
+        const f = new Set();
+        if (p.spo2 < 92) f.add("spo2<92");
+        else if (p.spo2 < 95) f.add("spo2_mild");
+        if (p.heart_rate > 110) f.add("tachy");
+        if (p.temp_c >= 39) f.add("high_fever");
+        if (p.temp_c >= 38) f.add("fever");
+        if (p.systolic_bp >= 180) f.add("bp_crisis");
+        if (p.systolic_bp < 90) f.add("hypo");
+        if (p.age >= 60 || p.age <= 5) f.add("vuln");
+        ["chest_pain", "breathless", "cough", "headache"].forEach((k) => {
+          if (p[k]) f.add(k);
+        });
+        return f;
+      }
+      function chain(p) {
+        const f = facts(p),
+          fired = [];
+        let ch = true;
+        while (ch) {
+          ch = false;
+          for (const [id, c, l, w] of RULES) {
+            const k = "lvl_" + l;
+            if (c.every((x) => f.has(x)) && !f.has(k)) {
+              f.add(k);
+              fired.push(w);
+              ch = true;
+            }
+          }
+        }
+        return [
+          f.has("lvl_E") ? 3 : f.has("lvl_H") ? 2 : f.has("lvl_M") ? 1 : 0,
+          fired,
+        ];
+      }
+      function ml(p) {
+        const x = FEAT.map((k) => p[k]);
+        let n = 0;
+        while (TREE[n][0] >= 0) {
+          const t = TREE[n];
+          n = x[t[0]] <= t[1] ? t[2] : t[3];
+        }
+        return TREE[n][1];
+      }
+      const N = 16,
+        CS = 26;
+      let seed = 7;
+      function rnd() {
+        seed = (seed + 0x6d2b79f5) | 0;
+        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      }
+      const city = [];
+      for (let r = 0; r < N; r++) {
+        city.push([]);
+        for (let c = 0; c < N; c++) {
+          const x = rnd();
+          city[r].push(x < 0.1 ? 2 : x < 0.28 ? 1 : 0);
+        }
+      }
+      const HOS = [
+        ["City Hospital", 2, 12],
+        ["Metro Care Hospital", 13, 3],
+        ["Sunrise Clinic", 12, 13],
+      ];
+      HOS.forEach((h) => (city[h[1]][h[2]] = 0));
+      let pat = [8, 8],
+        lastPath = null;
+      city[8][8] = 0;
+      const cost = (r, c) => (city[r][c] == 1 ? 3 : 1),
+        hh = (a, b) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
+      function nb(r, c) {
+        return [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ]
+          .map((d) => [r + d[0], c + d[1]])
+          .filter(
+            (q) =>
+              q[0] >= 0 &&
+              q[1] >= 0 &&
+              q[0] < N &&
+              q[1] < N &&
+              city[q[0]][q[1]] != 2,
+          );
+      }
+      function astar(s, g) {
+        const open = [[hh(s, g), 0, s]],
+          G = { [s]: 0 },
+          P = {};
+        while (open.length) {
+          open.sort((a, b) => a[0] - b[0]);
+          const [, c, cur] = open.shift();
+          if (c > G[cur]) continue;
+          if (cur[0] == g[0] && cur[1] == g[1]) {
+            const path = [cur];
+            let k = cur + "";
+            while (P[k]) {
+              path.push(P[k]);
+              k = P[k] + "";
+            }
+            return { path: path.reverse(), cost: c };
+          }
+          for (const q of nb(cur[0], cur[1])) {
+            const nc = c + cost(q[0], q[1]),
+              k = q + "";
+            if (nc < (G[k] ?? 1e9)) {
+              G[k] = nc;
+              P[k] = cur;
+              open.push([nc + hh(q, g), nc, q]);
+            }
+          }
+        }
+        return null;
+      }
+      function bestHos() {
+        let b = null;
+        for (const h of HOS) {
+          const r = astar(pat, [h[1], h[2]]);
+          if (r && (!b || r.cost < b.cost)) b = { ...r, name: h[0] };
+        }
+        return b;
+      }
+      function css(v) {
+        return getComputedStyle(document.documentElement)
+          .getPropertyValue(v)
+          .trim();
+      }
+      function draw() {
+        const x = $("map").getContext("2d"),
+          cc = [css("--c0"), css("--c1"), css("--c2")];
+        for (let r = 0; r < N; r++)
+          for (let c = 0; c < N; c++) {
+            x.fillStyle = cc[city[r][c]];
+            x.fillRect(c * CS, r * CS, CS, CS);
+            x.strokeStyle = "rgba(120,140,140,.2)";
+            x.strokeRect(c * CS, r * CS, CS, CS);
+          }
+        if (lastPath) {
+          x.strokeStyle = css("--pri");
+          x.lineWidth = 4;
+          x.lineCap = "round";
+          x.beginPath();
+          lastPath.forEach((q, i) => {
+            const px = q[1] * CS + CS / 2,
+              py = q[0] * CS + CS / 2;
+            i ? x.lineTo(px, py) : x.moveTo(px, py);
+          });
+          x.stroke();
+        }
+        HOS.forEach((h) => {
+          const px = h[2] * CS + CS / 2,
+            py = h[1] * CS + CS / 2;
+          x.fillStyle = css("--emg");
+          x.fillRect(px - 3, py - 9, 6, 18);
+          x.fillRect(px - 9, py - 3, 18, 6);
+          x.fillStyle = css("--ink");
+          x.font = "10px sans-serif";
+          x.fillText(h[0], Math.min(px + 10, N * CS - 90), py - 8);
+        });
+        x.fillStyle = "#1971c2";
+        x.beginPath();
+        x.arc(pat[1] * CS + CS / 2, pat[0] * CS + CS / 2, 8, 0, 7);
+        x.fill();
+        x.strokeStyle = "#fff";
+        x.lineWidth = 2;
+        x.stroke();
+      }
+      function run() {
+        if ($("age").value === "" || +$("age").value < 0) {
+          $("age").focus();
+          alert("Please enter your age first.");
+          return;
+        }
+        const p = read(),
+          [rl, fired] = chain(p),
+          fin = Math.max(rl, ml(p));
+        $("out").hidden = false;
+        $("res").style.background = css(COL[fin]);
+        $("rt").textContent = MSG[fin][0];
+        $("rs").textContent = MSG[fin][1];
+        const items = fired.length
+          ? fired
+          : [
+              fin
+                ? "Your readings together suggest some extra care is a good idea"
+                : "Your readings look normal",
+            ];
+        $("why").innerHTML = items
+          .map((s) => "<li>" + s.charAt(0).toUpperCase() + s.slice(1) + "</li>")
+          .join("");
+        lastPath = null;
+        $("hcard").hidden = fin < 2;
+        if (fin >= 2) {
+          const r = bestHos();
+          if (r) {
+            lastPath = r.path;
+            $("hname").textContent = r.name;
+            $("htime").textContent =
+              "about " + Math.max(2, r.cost * 2) + " min away";
+            draw();
+          }
+        }
+        $("res").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      const EX = [
+        ["Feeling fine", 25, 0, 0, 0, 0, "", 76, 98, 118],
+        ["Fever and cough", 34, 0, 0, 1, 0, 38.4, 92, 96, 124],
+        ["Chest pain", 58, 1, 0, 0, 0, 37, 118, 95, 126],
+        ["Very unwell", 66, 0, 1, 1, 0, 38.6, 112, 89, 85],
+      ];
+      EX.forEach((e) => {
+        const b = document.createElement("button");
+        b.className = "ex";
+        b.textContent = e[0];
+        b.onclick = () => {
+          $("age").value = e[1];
+          ["chest_pain", "breathless", "cough", "headache"].forEach(
+            (k, i) => ($(k).checked = !!e[i + 2]),
+          );
+          $("temp").value = e[6] || 36.8;
+          $("hr").value = e[7];
+          $("spo2").value = e[8];
+          $("sbp").value = e[9];
+          run();
+        };
+        $("ex").appendChild(b);
+      });
+      $("run").onclick = run;
+      $("map").addEventListener("click", (ev) => {
+        const r = $("map").getBoundingClientRect(),
+          s = 416 / r.width,
+          c = Math.floor(((ev.clientX - r.left) * s) / CS),
+          rw = Math.floor(((ev.clientY - r.top) * s) / CS);
+        if (rw < 0 || c < 0 || rw >= N || c >= N || city[rw][c] == 2) return;
+        pat = [rw, c];
+        run();
+      });
+      matchMedia("(prefers-color-scheme:dark)").addEventListener(
+        "change",
+        () => {
+          if (!$("hcard").hidden) draw();
+        },
+      );
+    </script>
+  </body>
+</html>
